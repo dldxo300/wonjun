@@ -24,6 +24,7 @@ import { createServerSupabaseClient } from "@/utils/supabase/server";
 import { Product } from "@/types/payment";
 import { ProductCard } from "@/components/payment/product-card";
 import { createMetadata } from "@/utils/seo/metadata";
+import { logger } from "@/utils/logger";
 
 export const metadata = createMetadata({
   title: "상품 목록",
@@ -31,7 +32,7 @@ export const metadata = createMetadata({
 });
 
 export default async function ProductsPage() {
-  console.group("📦 상품 목록 페이지 렌더링");
+  logger.group("📦 상품 목록 페이지 렌더링");
 
   const supabase = await createServerSupabaseClient();
 
@@ -43,7 +44,7 @@ export default async function ProductsPage() {
 
   if (error) {
     console.error("❌ 상품 조회 실패:", error);
-    console.groupEnd();
+    logger.groupEnd();
 
     return (
       <div className="container mx-auto px-4 py-8">
@@ -62,22 +63,20 @@ export default async function ProductsPage() {
 
   if (!products || products.length === 0) {
     console.log("📭 상품이 없습니다.");
-    console.groupEnd();
+    logger.groupEnd();
 
     return (
       <div className="container mx-auto px-4 py-8">
         <div className="text-center">
           <h1 className="text-3xl font-bold mb-4">상품이 없습니다</h1>
-          <p className="text-muted-foreground">
-            아직 등록된 상품이 없습니다.
-          </p>
+          <p className="text-muted-foreground">아직 등록된 상품이 없습니다.</p>
         </div>
       </div>
     );
   }
 
   console.log("✅ 상품 조회 완료:", products.length, "개");
-  console.groupEnd();
+  logger.groupEnd();
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -97,18 +96,15 @@ export default async function ProductsPage() {
       <div className="mt-12 p-6 bg-muted rounded-lg">
         <h2 className="text-xl font-bold mb-2">💡 테스트 안내</h2>
         <p className="text-sm text-muted-foreground">
-          이 페이지는 토스페이먼츠 결제 연동 데모입니다. 테스트 키를
-          사용하므로 실제 결제가 이루어지지 않습니다.
+          이 페이지는 토스페이먼츠 결제 연동 데모입니다. 테스트 키를 사용하므로
+          실제 결제가 이루어지지 않습니다.
         </p>
         <ul className="mt-4 space-y-2 text-sm text-muted-foreground">
           <li>• 모든 결제수단을 테스트할 수 있습니다.</li>
-          <li>
-            • 카드번호는 실제 카드가 아닌 테스트 카드 정보를 사용하세요.
-          </li>
+          <li>• 카드번호는 실제 카드가 아닌 테스트 카드 정보를 사용하세요.</li>
           <li>• 결제 승인 후 데이터베이스에 결제 내역이 저장됩니다.</li>
         </ul>
       </div>
     </div>
   );
 }
-

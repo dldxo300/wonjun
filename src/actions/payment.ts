@@ -25,11 +25,8 @@
 
 import { createServerSupabaseClient } from "@/utils/supabase/server";
 import { confirmPayment, cancelPayment } from "@/utils/tosspayments/server";
-import {
-  PaymentConfirmResult,
-  TemporaryOrder,
-  Payment,
-} from "@/types/payment";
+import { PaymentConfirmResult, TemporaryOrder, Payment } from "@/types/payment";
+import { logger } from "@/utils/logger";
 
 /**
  * 임시 주문 생성 (결제 요청 전 데이터 저장)
@@ -37,9 +34,9 @@ import {
  * @returns 성공 여부
  */
 export async function createTemporaryOrder(
-  order: TemporaryOrder
+  order: TemporaryOrder,
 ): Promise<{ success: boolean; error?: string }> {
-  console.group("📝 임시 주문 생성");
+  logger.group("📝 임시 주문 생성");
   console.log("주문 정보:", order);
 
   try {
@@ -54,14 +51,14 @@ export async function createTemporaryOrder(
 
     if (productError || !product) {
       console.error("❌ 상품을 찾을 수 없습니다:", productError);
-      console.groupEnd();
+      logger.groupEnd();
       return { success: false, error: "상품을 찾을 수 없습니다." };
     }
 
     // 금액 검증
     if (product.price !== order.amount) {
       console.error("❌ 상품 가격과 주문 금액이 일치하지 않습니다.");
-      console.groupEnd();
+      logger.groupEnd();
       return {
         success: false,
         error: "상품 가격과 주문 금액이 일치하지 않습니다.",
@@ -80,17 +77,17 @@ export async function createTemporaryOrder(
 
     if (insertError) {
       console.error("❌ 임시 주문 저장 실패:", insertError);
-      console.groupEnd();
+      logger.groupEnd();
       return { success: false, error: "임시 주문 저장에 실패했습니다." };
     }
 
     console.log("✅ 임시 주문 생성 완료");
-    console.groupEnd();
+    logger.groupEnd();
 
     return { success: true };
   } catch (error) {
     console.error("❌ 임시 주문 생성 중 오류:", error);
-    console.groupEnd();
+    logger.groupEnd();
     return {
       success: false,
       error: "임시 주문 생성 중 오류가 발생했습니다.",
@@ -108,9 +105,9 @@ export async function createTemporaryOrder(
 export async function confirmPaymentAction(
   paymentKey: string,
   orderId: string,
-  amount: number
+  amount: number,
 ): Promise<PaymentConfirmResult> {
-  console.group("💳 결제 승인 처리");
+  logger.group("💳 결제 승인 처리");
   console.log("결제 키:", paymentKey);
   console.log("주문 ID:", orderId);
   console.log("금액:", amount);
@@ -127,7 +124,7 @@ export async function confirmPaymentAction(
 
     if (tempError || !tempPayment) {
       console.error("❌ 주문을 찾을 수 없습니다:", tempError);
-      console.groupEnd();
+      logger.groupEnd();
       return {
         success: false,
         error: "주문을 찾을 수 없습니다.",
@@ -137,7 +134,7 @@ export async function confirmPaymentAction(
     // 금액 검증
     if (tempPayment.amount !== amount) {
       console.error("❌ 결제 금액이 일치하지 않습니다.");
-      console.groupEnd();
+      logger.groupEnd();
       return {
         success: false,
         error: "결제 금액이 일치하지 않습니다.",
@@ -165,7 +162,7 @@ export async function confirmPaymentAction(
 
     if (updateError) {
       console.error("❌ 결제 정보 업데이트 실패:", updateError);
-      console.groupEnd();
+      logger.groupEnd();
       return {
         success: false,
         error: "결제 정보 업데이트에 실패했습니다.",
@@ -173,7 +170,7 @@ export async function confirmPaymentAction(
     }
 
     console.log("✅ 결제 승인 완료");
-    console.groupEnd();
+    logger.groupEnd();
 
     return {
       success: true,
@@ -181,7 +178,7 @@ export async function confirmPaymentAction(
     };
   } catch (error) {
     console.error("❌ 결제 승인 중 오류:", error);
-    console.groupEnd();
+    logger.groupEnd();
 
     const errorMessage =
       error instanceof Error ? error.message : "결제 승인에 실패했습니다.";
@@ -201,9 +198,9 @@ export async function confirmPaymentAction(
  */
 export async function cancelPaymentAction(
   paymentKey: string,
-  cancelReason: string
+  cancelReason: string,
 ): Promise<{ success: boolean; error?: string }> {
-  console.group("🔙 결제 취소 처리");
+  logger.group("🔙 결제 취소 처리");
   console.log("결제 키:", paymentKey);
   console.log("취소 사유:", cancelReason);
 
@@ -219,14 +216,14 @@ export async function cancelPaymentAction(
 
     if (paymentError || !payment) {
       console.error("❌ 결제를 찾을 수 없습니다:", paymentError);
-      console.groupEnd();
+      logger.groupEnd();
       return { success: false, error: "결제를 찾을 수 없습니다." };
     }
 
     // 이미 취소된 결제인지 확인
     if (payment.status === "CANCELED") {
       console.error("❌ 이미 취소된 결제입니다.");
-      console.groupEnd();
+      logger.groupEnd();
       return { success: false, error: "이미 취소된 결제입니다." };
     }
 
@@ -243,7 +240,7 @@ export async function cancelPaymentAction(
 
     if (updateError) {
       console.error("❌ 결제 상태 업데이트 실패:", updateError);
-      console.groupEnd();
+      logger.groupEnd();
       return {
         success: false,
         error: "결제 상태 업데이트에 실패했습니다.",
@@ -251,12 +248,12 @@ export async function cancelPaymentAction(
     }
 
     console.log("✅ 결제 취소 완료");
-    console.groupEnd();
+    logger.groupEnd();
 
     return { success: true };
   } catch (error) {
     console.error("❌ 결제 취소 중 오류:", error);
-    console.groupEnd();
+    logger.groupEnd();
 
     const errorMessage =
       error instanceof Error ? error.message : "결제 취소에 실패했습니다.";
@@ -274,9 +271,9 @@ export async function cancelPaymentAction(
  * @returns 결제 내역 목록
  */
 export async function getPaymentHistory(
-  userId?: string
+  userId?: string,
 ): Promise<{ success: boolean; payments?: Payment[]; error?: string }> {
-  console.group("📋 결제 내역 조회");
+  logger.group("📋 결제 내역 조회");
   console.log("사용자 ID:", userId || "비회원");
 
   try {
@@ -295,17 +292,17 @@ export async function getPaymentHistory(
 
     if (error) {
       console.error("❌ 결제 내역 조회 실패:", error);
-      console.groupEnd();
+      logger.groupEnd();
       return { success: false, error: "결제 내역 조회에 실패했습니다." };
     }
 
     console.log("✅ 결제 내역 조회 완료:", payments?.length || 0, "건");
-    console.groupEnd();
+    logger.groupEnd();
 
     return { success: true, payments: payments as Payment[] };
   } catch (error) {
     console.error("❌ 결제 내역 조회 중 오류:", error);
-    console.groupEnd();
+    logger.groupEnd();
 
     return {
       success: false,
@@ -313,4 +310,3 @@ export async function getPaymentHistory(
     };
   }
 }
-

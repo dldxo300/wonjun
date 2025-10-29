@@ -19,6 +19,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { XCircle } from "lucide-react";
 import { createMetadata } from "@/utils/seo/metadata";
+import { logger } from "@/utils/logger";
 
 export const metadata = createMetadata({
   title: "결제 실패",
@@ -40,11 +41,11 @@ export default async function PaymentFailPage({
   const params = await searchParams;
   const { code, message, orderId } = params;
 
-  console.group("❌ 결제 실패 페이지");
+  logger.group("❌ 결제 실패 페이지");
   console.log("에러 코드:", code);
   console.log("에러 메시지:", message);
   console.log("주문 ID:", orderId);
-  console.groupEnd();
+  logger.groupEnd();
 
   // 에러 메시지 디코딩
   const decodedMessage = message
@@ -62,7 +63,9 @@ export default async function PaymentFailPage({
     AMOUNT_MISMATCH: "결제 금액이 일치하지 않습니다.",
   };
 
-  const userFriendlyMessage = code ? errorMessages[code] || decodedMessage : decodedMessage;
+  const userFriendlyMessage = code
+    ? errorMessages[code] || decodedMessage
+    : decodedMessage;
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -149,4 +152,3 @@ export default async function PaymentFailPage({
     </div>
   );
 }
-

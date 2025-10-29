@@ -22,17 +22,18 @@
 
 import { type NextRequest } from "next/server";
 import { updateSession } from "@/utils/supabase/middleware";
+import { logger } from "@/utils/logger";
 
 export async function middleware(request: NextRequest) {
-  console.group("🔐 Middleware 실행");
+  logger.group("🔐 Middleware 실행");
   console.log("경로:", request.nextUrl.pathname);
   console.log("시간:", new Date().toISOString());
-  
+
   const response = await updateSession(request);
-  
+
   console.log("응답 상태:", response.status);
-  console.groupEnd();
-  
+  logger.groupEnd();
+
   return response;
 }
 

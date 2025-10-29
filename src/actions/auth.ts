@@ -37,6 +37,7 @@ import { revalidatePath } from "next/cache";
 import { createServerSupabaseClient } from "@/utils/supabase/server";
 import { loginSchema, signupSchema, magicLinkSchema } from "@/types/auth";
 import { getAuthCallbackURL } from "@/utils/url";
+import { logger } from "@/utils/logger";
 
 // 액션 함수들의 반환 타입 정의
 type ActionState = {
@@ -203,7 +204,7 @@ export async function sendMagicLink(
   try {
     const email = formData.get("email") as string;
 
-    console.group("📧 매직 링크 전송 시작");
+    logger.group("📧 매직 링크 전송 시작");
     console.log("이메일:", email);
 
     // Zod 스키마를 사용한 유효성 검사
@@ -219,7 +220,7 @@ export async function sendMagicLink(
       });
 
       console.log("❌ 유효성 검사 실패:", fieldErrors);
-      console.groupEnd();
+      logger.groupEnd();
 
       return {
         error: "입력 필드를 확인해주세요.",
@@ -245,7 +246,7 @@ export async function sendMagicLink(
 
     if (error) {
       console.log("❌ Supabase 에러:", error.message);
-      console.groupEnd();
+      logger.groupEnd();
 
       // Supabase 에러 메시지를 사용자 친화적으로 변환
       let errorMessage = "매직 링크 전송에 실패했습니다.";
@@ -270,7 +271,7 @@ export async function sendMagicLink(
     }
 
     console.log("✅ 매직 링크 전송 성공");
-    console.groupEnd();
+    logger.groupEnd();
 
     return {
       error: null,
@@ -278,7 +279,7 @@ export async function sendMagicLink(
     };
   } catch (err) {
     console.log("❌ 예상치 못한 에러:", err);
-    console.groupEnd();
+    logger.groupEnd();
 
     return {
       error: "서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.",

@@ -24,6 +24,7 @@ import {
   TossPaymentError,
 } from "@/types/payment";
 import { TOSS_PAYMENTS_BASE_URL } from "./constants";
+import { logger } from "@/utils/logger";
 
 // 시크릿 키를 Base64로 인코딩
 function getAuthorizationHeader(): string {
@@ -31,7 +32,7 @@ function getAuthorizationHeader(): string {
 
   if (!secretKey) {
     throw new Error(
-      "토스페이먼츠 시크릿 키가 설정되지 않았습니다. TOSS_SECRET_KEY 환경 변수를 확인하세요."
+      "토스페이먼츠 시크릿 키가 설정되지 않았습니다. TOSS_SECRET_KEY 환경 변수를 확인하세요.",
     );
   }
 
@@ -46,40 +47,37 @@ function getAuthorizationHeader(): string {
  * @returns 결제 승인 결과
  */
 export async function confirmPayment(
-  request: TossPaymentConfirmRequest
+  request: TossPaymentConfirmRequest,
 ): Promise<TossPaymentResponse> {
-  console.group("🔵 토스페이먼츠 결제 승인 요청");
+  logger.group("🔵 토스페이먼츠 결제 승인 요청");
   console.log("요청 데이터:", request);
 
   try {
-    const response = await fetch(
-      `${TOSS_PAYMENTS_BASE_URL}/payments/confirm`,
-      {
-        method: "POST",
-        headers: {
-          Authorization: getAuthorizationHeader(),
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(request),
-      }
-    );
+    const response = await fetch(`${TOSS_PAYMENTS_BASE_URL}/payments/confirm`, {
+      method: "POST",
+      headers: {
+        Authorization: getAuthorizationHeader(),
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(request),
+    });
 
     const data = await response.json();
 
     if (!response.ok) {
       const error = data as TossPaymentError;
       console.error("❌ 결제 승인 실패:", error);
-      console.groupEnd();
+      logger.groupEnd();
       throw new Error(error.message || "결제 승인에 실패했습니다.");
     }
 
     console.log("✅ 결제 승인 성공:", data);
-    console.groupEnd();
+    logger.groupEnd();
 
     return data as TossPaymentResponse;
   } catch (error) {
     console.error("❌ 결제 승인 중 오류 발생:", error);
-    console.groupEnd();
+    logger.groupEnd();
     throw error;
   }
 }
@@ -94,9 +92,9 @@ export async function confirmPayment(
 export async function cancelPayment(
   paymentKey: string,
   cancelReason: string,
-  cancelAmount?: number
+  cancelAmount?: number,
 ): Promise<TossPaymentResponse> {
-  console.group("🔴 토스페이먼츠 결제 취소 요청");
+  logger.group("🔴 토스페이먼츠 결제 취소 요청");
   console.log("결제 키:", paymentKey);
   console.log("취소 사유:", cancelReason);
   console.log("취소 금액:", cancelAmount || "전액");
@@ -119,7 +117,7 @@ export async function cancelPayment(
           "Content-Type": "application/json",
         },
         body: JSON.stringify(body),
-      }
+      },
     );
 
     const data = await response.json();
@@ -127,17 +125,17 @@ export async function cancelPayment(
     if (!response.ok) {
       const error = data as TossPaymentError;
       console.error("❌ 결제 취소 실패:", error);
-      console.groupEnd();
+      logger.groupEnd();
       throw new Error(error.message || "결제 취소에 실패했습니다.");
     }
 
     console.log("✅ 결제 취소 성공:", data);
-    console.groupEnd();
+    logger.groupEnd();
 
     return data as TossPaymentResponse;
   } catch (error) {
     console.error("❌ 결제 취소 중 오류 발생:", error);
-    console.groupEnd();
+    logger.groupEnd();
     throw error;
   }
 }
@@ -148,9 +146,9 @@ export async function cancelPayment(
  * @returns 결제 정보
  */
 export async function getPayment(
-  paymentKey: string
+  paymentKey: string,
 ): Promise<TossPaymentResponse> {
-  console.group("🔍 토스페이먼츠 결제 조회 요청");
+  logger.group("🔍 토스페이먼츠 결제 조회 요청");
   console.log("결제 키:", paymentKey);
 
   try {
@@ -161,7 +159,7 @@ export async function getPayment(
         headers: {
           Authorization: getAuthorizationHeader(),
         },
-      }
+      },
     );
 
     const data = await response.json();
@@ -169,18 +167,17 @@ export async function getPayment(
     if (!response.ok) {
       const error = data as TossPaymentError;
       console.error("❌ 결제 조회 실패:", error);
-      console.groupEnd();
+      logger.groupEnd();
       throw new Error(error.message || "결제 조회에 실패했습니다.");
     }
 
     console.log("✅ 결제 조회 성공:", data);
-    console.groupEnd();
+    logger.groupEnd();
 
     return data as TossPaymentResponse;
   } catch (error) {
     console.error("❌ 결제 조회 중 오류 발생:", error);
-    console.groupEnd();
+    logger.groupEnd();
     throw error;
   }
 }
-

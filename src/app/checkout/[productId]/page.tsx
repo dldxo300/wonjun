@@ -28,6 +28,7 @@ import { CheckoutForm } from "@/components/payment/checkout-form";
 import { Card, CardContent } from "@/components/ui/card";
 import { createMetadata } from "@/utils/seo/metadata";
 import { Separator } from "@/components/ui/separator";
+import { logger } from "@/utils/logger";
 
 interface CheckoutPageProps {
   params: Promise<{
@@ -60,7 +61,7 @@ export async function generateMetadata({ params }: CheckoutPageProps) {
 export default async function CheckoutPage({ params }: CheckoutPageProps) {
   const { productId } = await params;
 
-  console.group("🛒 결제 주문서 페이지 렌더링");
+  logger.group("🛒 결제 주문서 페이지 렌더링");
   console.log("상품 ID:", productId);
 
   const supabase = await createServerSupabaseClient();
@@ -74,7 +75,7 @@ export default async function CheckoutPage({ params }: CheckoutPageProps) {
 
   if (error || !product) {
     console.error("❌ 상품 조회 실패:", error);
-    console.groupEnd();
+    logger.groupEnd();
     notFound();
   }
 
@@ -86,7 +87,7 @@ export default async function CheckoutPage({ params }: CheckoutPageProps) {
   } = await supabase.auth.getUser();
 
   console.log("사용자:", user ? user.id : "비회원");
-  console.groupEnd();
+  logger.groupEnd();
 
   const typedProduct = product as Product;
 
@@ -172,4 +173,3 @@ export default async function CheckoutPage({ params }: CheckoutPageProps) {
     </div>
   );
 }
-

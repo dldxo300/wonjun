@@ -24,6 +24,7 @@ import { redirect } from "next/navigation";
 import { confirmPaymentAction } from "@/actions/payment";
 import { PaymentResult } from "@/components/payment/payment-result";
 import { createMetadata } from "@/utils/seo/metadata";
+import { logger } from "@/utils/logger";
 
 export const metadata = createMetadata({
   title: "결제 완료",
@@ -45,7 +46,7 @@ export default async function PaymentSuccessPage({
   const params = await searchParams;
   const { paymentKey, orderId, amount } = params;
 
-  console.group("✅ 결제 성공 페이지");
+  logger.group("✅ 결제 성공 페이지");
   console.log("결제 키:", paymentKey);
   console.log("주문 ID:", orderId);
   console.log("금액:", amount);
@@ -53,7 +54,7 @@ export default async function PaymentSuccessPage({
   // 필수 파라미터 확인
   if (!paymentKey || !orderId || !amount) {
     console.error("❌ 필수 파라미터 누락");
-    console.groupEnd();
+    logger.groupEnd();
     redirect("/payment/fail?message=잘못된 요청입니다");
   }
 
@@ -61,7 +62,7 @@ export default async function PaymentSuccessPage({
   const parsedAmount = parseInt(amount, 10);
   if (isNaN(parsedAmount)) {
     console.error("❌ 잘못된 금액 형식");
-    console.groupEnd();
+    logger.groupEnd();
     redirect("/payment/fail?message=잘못된 금액 정보입니다");
   }
 
@@ -70,17 +71,17 @@ export default async function PaymentSuccessPage({
 
   if (!result.success || !result.payment) {
     console.error("❌ 결제 승인 실패:", result.error);
-    console.groupEnd();
+    logger.groupEnd();
 
     const errorMessage = encodeURIComponent(
-      result.error || "결제 승인에 실패했습니다"
+      result.error || "결제 승인에 실패했습니다",
     );
     const errorCode = result.errorCode ? `&code=${result.errorCode}` : "";
     redirect(`/payment/fail?message=${errorMessage}${errorCode}`);
   }
 
   console.log("✅ 결제 승인 완료");
-  console.groupEnd();
+  logger.groupEnd();
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -90,4 +91,3 @@ export default async function PaymentSuccessPage({
     </div>
   );
 }
-
